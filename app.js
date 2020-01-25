@@ -41,8 +41,31 @@ const serveGuestBookPage = function (req) {
   return res;
 };
 
+const getCommentDetails = function () {
+  if (!fs.existsSync('./data/comments.json')) {
+    return [];
+  }
+
+  return JSON.parse(fs.readFileSync('./data/comments.json', 'utf8'));
+}
+
+const addCommentAndServePage = function (req) {
+  const {name, comment} = req.body;
+  const date = new Date().toLocaleString();
+  const commentDetail = {name, comment, date};
+
+  let commentDetails = getCommentDetails();
+  commentDetails.unshift(commentDetail);
+
+  commentDetails = JSON.stringify(commentDetails);
+  fs.writeFileSync('./data/comments.json', commentDetails, 'utf8');
+
+  return serveGuestBookPage(req);
+};
+
 const findHandler = function (req) {
   if (req.method === 'GET' && req.url === '/') return serveHomePage;
+  if (req.method === 'POST' && req.url === '/addComment') return addCommentAndServePage;
   if (req.method === 'GET' && req.url === '/guest-book.html') return serveGuestBookPage;
   if (req.method === 'GET') return serveStaticFile;
   return new Response();
