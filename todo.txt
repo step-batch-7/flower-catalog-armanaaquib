@@ -1,0 +1,6 @@
+1. will create static pages for flowers
+2. will create template for guest book
+3. will connect them
+4. will create server
+5. will create json file to store comments
+6. will sent guest book page dynamically
