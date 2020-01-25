@@ -29,8 +29,20 @@ const serveHomePage = function (req) {
   return serveStaticFile(req);
 };
 
+const addCommentHtml = function (commentsHtml, commentDetail) {
+  const commentHtml = `
+  <div class="comment">
+    <h4>${commentDetail.name}</h4>
+    <p>${commentDetail.date}</p>
+    <p>${commentDetail.comment}</p>
+  </div>`;
+
+  return commentsHtml + commentHtml;
+};
+
 const serveGuestBookPage = function (req) {
-  const comments = "";
+  const commentDetails = getCommentDetails();
+  const comments = commentDetails.reduce(addCommentHtml, '');
   const guestBookPage = loadTemplate('guest-book.html', {comments});
   const res = new Response()
   res.setHeader('Content-Type', CONTENT_TYPES.html);
@@ -50,9 +62,8 @@ const getCommentDetails = function () {
 }
 
 const addCommentAndServePage = function (req) {
-  const {name, comment} = req.body;
   const date = new Date().toLocaleString();
-  const commentDetail = {name, comment, date};
+  const commentDetail = {...req.body, date};
 
   let commentDetails = getCommentDetails();
   commentDetails.unshift(commentDetail);
