@@ -1,0 +1,13 @@
+#heading {
+  padding: 10px;
+  color: rgb(237, 192, 114);
+}
+
+.container {
+  display: flex;
+}
+
+#flower-img {
+  height: 600px;
+  border: 1px solid black;
+}
