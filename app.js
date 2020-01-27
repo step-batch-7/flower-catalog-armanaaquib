@@ -30,6 +30,14 @@ const serveHomePage = function (req) {
   return serveStaticFile(req);
 };
 
+const getCommentsDetail = function () {
+  if (!fs.existsSync(STORAGE_FILE)) {
+    return [];
+  }
+
+  return JSON.parse(fs.readFileSync(STORAGE_FILE, 'utf8'));
+};
+
 const addCommentHtml = function (commentsHtml, commentDetail) {
   const commentHtml = `
   <div class="comment">
@@ -41,39 +49,36 @@ const addCommentHtml = function (commentsHtml, commentDetail) {
   return commentsHtml + commentHtml;
 };
 
-const formatHtmlWhiteSpaces = function (text) {
-  const whiteSpacesBag = {'\\+': ' ', '%0D%0A': '<br>', '%3F': '?', '%2C': ','};
+const replace = function (text, refBag) {
 
   const replaceWithKeyValue = function (text, key) {
     const pattern = new RegExp(key, 'g');
-    return text.replace(pattern, whiteSpacesBag[key]);
+    return text.replace(pattern, refBag[key]);
   };
 
-  const keys = Object.keys(whiteSpacesBag);
+  const keys = Object.keys(refBag);
   return keys.reduce(replaceWithKeyValue, text);
 };
 
-const getCommentsDetail = function () {
-  if (!fs.existsSync(STORAGE_FILE)) {
-    return [];
-  }
+const formatHtmlWhiteSpaces = function (text) {
+  const whiteSpacesBag = {' ': '&nbsp;', '\r\n': '<br>'};
 
-  return JSON.parse(fs.readFileSync(STORAGE_FILE, 'utf8'));
+  return replace(text, whiteSpacesBag);
 };
 
-const updateDateFormat = function (commentDetail) {
+const updateToHtmlFormat = function (commentDetail) {
   commentDetail.date = new Date(commentDetail.date).toLocaleString();
+  commentDetail.name = formatHtmlWhiteSpaces(commentDetail.name);
+  commentDetail.comment = formatHtmlWhiteSpaces(commentDetail.comment);
   return commentDetail;
 };
 
 const serveGuestBookPage = function (req) {
   let commentsDetail = getCommentsDetail();
-  commentsDetail = commentsDetail.map(updateDateFormat);
+  commentsDetail = commentsDetail.map(updateToHtmlFormat);
 
   const comments = commentsDetail.reduce(addCommentHtml, '');
-
-  let guestBookPage = loadTemplate('guest-book.html', {comments});
-  guestBookPage = formatHtmlWhiteSpaces(guestBookPage);
+  const guestBookPage = loadTemplate('guest-book.html', {comments});
 
   const res = new Response()
   res.setHeader('Content-Type', CONTENT_TYPES.html);
@@ -89,11 +94,20 @@ const redirectTo = function (newUrl) {
   res.setHeader('location', newUrl);
   res.statusCode = 301;
   return res;
-}
+};
+
+const formatStringWhiteSpaces = function (text) {
+  const whiteSpacesBag = {'\\+': ' ', '%0D%0A': '\r\n', '%3F': '?', '%2C': ','};
+
+  return replace(text, whiteSpacesBag);
+};
 
 const addCommentAndRedirect = function (req) {
   const date = new Date();
   const commentDetail = {...req.body, date};
+
+  commentDetail.name = formatStringWhiteSpaces(commentDetail.name);
+  commentDetail.comment = formatStringWhiteSpaces(commentDetail.comment);
 
   let commentDetails = getCommentsDetail();
   commentDetails.unshift(commentDetail);
@@ -115,6 +129,6 @@ const findHandler = function (req) {
 const processRequest = (req) => {
   const handler = findHandler(req);
   return handler(req);
-}
+};
 
 module.exports = {processRequest};
