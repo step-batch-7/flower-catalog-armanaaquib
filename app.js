@@ -32,18 +32,41 @@ const serveHomePage = function (req) {
 const addCommentHtml = function (commentsHtml, commentDetail) {
   const commentHtml = `
   <div class="comment">
-    <h4>${commentDetail.name}</h4>
-    <p>${commentDetail.date}</p>
+    <h3>${commentDetail.name}</h3>
+    <h5>${commentDetail.date}</h5>
     <p>${commentDetail.comment}</p>
   </div>`;
 
   return commentsHtml + commentHtml;
 };
 
+const formatHtmlWhiteSpaces = function (text) {
+  const whiteSpacesBag = {'\\+': ' ', '%0D%0A': '<br>', '%3F': '?', '%2C': ','};
+
+  const replaceWithKeyValue = function (text, key) {
+    const pattern = new RegExp(key, 'g');
+    return text.replace(pattern, whiteSpacesBag[key]);
+  };
+
+  const keys = Object.keys(whiteSpacesBag);
+  return keys.reduce(replaceWithKeyValue, text);
+};
+
+const getCommentDetails = function () {
+  if (!fs.existsSync('./data/comments.json')) {
+    return [];
+  }
+
+  return JSON.parse(fs.readFileSync('./data/comments.json', 'utf8'));
+};
+
 const serveGuestBookPage = function (req) {
   const commentDetails = getCommentDetails();
   const comments = commentDetails.reduce(addCommentHtml, '');
-  const guestBookPage = loadTemplate('guest-book.html', {comments});
+
+  let guestBookPage = loadTemplate('guest-book.html', {comments});
+  guestBookPage = formatHtmlWhiteSpaces(guestBookPage);
+
   const res = new Response()
   res.setHeader('Content-Type', CONTENT_TYPES.html);
   res.setHeader('Content-Length', guestBookPage.length);
@@ -53,13 +76,6 @@ const serveGuestBookPage = function (req) {
   return res;
 };
 
-const getCommentDetails = function () {
-  if (!fs.existsSync('./data/comments.json')) {
-    return [];
-  }
-
-  return JSON.parse(fs.readFileSync('./data/comments.json', 'utf8'));
-}
 
 const addCommentAndServePage = function (req) {
   const date = new Date().toLocaleString();
