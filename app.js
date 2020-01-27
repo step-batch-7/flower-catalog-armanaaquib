@@ -53,7 +53,7 @@ const formatHtmlWhiteSpaces = function (text) {
   return keys.reduce(replaceWithKeyValue, text);
 };
 
-const getCommentDetails = function () {
+const getCommentsDetail = function () {
   if (!fs.existsSync(STORAGE_FILE)) {
     return [];
   }
@@ -61,9 +61,16 @@ const getCommentDetails = function () {
   return JSON.parse(fs.readFileSync(STORAGE_FILE, 'utf8'));
 };
 
+const updateDateFormat = function (commentDetail) {
+  commentDetail.date = new Date(commentDetail.date).toLocaleString();
+  return commentDetail;
+};
+
 const serveGuestBookPage = function (req) {
-  const commentDetails = getCommentDetails();
-  const comments = commentDetails.reduce(addCommentHtml, '');
+  let commentsDetail = getCommentsDetail();
+  commentsDetail = commentsDetail.map(updateDateFormat);
+
+  const comments = commentsDetail.reduce(addCommentHtml, '');
 
   let guestBookPage = loadTemplate('guest-book.html', {comments});
   guestBookPage = formatHtmlWhiteSpaces(guestBookPage);
@@ -85,10 +92,10 @@ const redirectTo = function (newUrl) {
 }
 
 const addCommentAndRedirect = function (req) {
-  const date = new Date().toLocaleString();
+  const date = new Date();
   const commentDetail = {...req.body, date};
 
-  let commentDetails = getCommentDetails();
+  let commentDetails = getCommentsDetail();
   commentDetails.unshift(commentDetail);
 
   commentDetails = JSON.stringify(commentDetails);
