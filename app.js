@@ -97,7 +97,13 @@ const redirectTo = function (newUrl) {
 };
 
 const formatStringWhiteSpaces = function (text) {
-  const whiteSpacesBag = {'\\+': ' ', '%0D%0A': '\r\n', '%3F': '?', '%2C': ','};
+  const whiteSpacesBag = {
+    '\\+': ' ',
+    '%0D%0A': '\r\n',
+    '%3F': '?',
+    '%2C': ',',
+    '%21': '!'
+  };
 
   return replace(text, whiteSpacesBag);
 };
