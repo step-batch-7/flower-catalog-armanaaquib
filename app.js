@@ -5,6 +5,7 @@ const {loadTemplate} = require('./lib/viewTemplate');
 const CONTENT_TYPES = require('./lib/mimeTypes');
 
 const STATIC_FOLDER = `${__dirname}/public`;
+const STORAGE_FILE = `${__dirname}/data/commentsDetail.json`;
 
 const serveStaticFile = function (req) {
   const path = `${STATIC_FOLDER}${req.url}`;
@@ -53,11 +54,11 @@ const formatHtmlWhiteSpaces = function (text) {
 };
 
 const getCommentDetails = function () {
-  if (!fs.existsSync('./data/comments.json')) {
+  if (!fs.existsSync(STORAGE_FILE)) {
     return [];
   }
 
-  return JSON.parse(fs.readFileSync('./data/comments.json', 'utf8'));
+  return JSON.parse(fs.readFileSync(STORAGE_FILE, 'utf8'));
 };
 
 const serveGuestBookPage = function (req) {
@@ -91,7 +92,7 @@ const addCommentAndRedirect = function (req) {
   commentDetails.unshift(commentDetail);
 
   commentDetails = JSON.stringify(commentDetails);
-  fs.writeFileSync('./data/comments.json', commentDetails, 'utf8');
+  fs.writeFileSync(STORAGE_FILE, commentDetails, 'utf8');
 
   return redirectTo('guest-book.html');
 };
