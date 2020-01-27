@@ -76,8 +76,14 @@ const serveGuestBookPage = function (req) {
   return res;
 };
 
+const redirectTo = function (newUrl) {
+  const res = new Response();
+  res.setHeader('location', newUrl);
+  res.statusCode = 301;
+  return res;
+}
 
-const addCommentAndServePage = function (req) {
+const addCommentAndRedirect = function (req) {
   const date = new Date().toLocaleString();
   const commentDetail = {...req.body, date};
 
@@ -87,12 +93,12 @@ const addCommentAndServePage = function (req) {
   commentDetails = JSON.stringify(commentDetails);
   fs.writeFileSync('./data/comments.json', commentDetails, 'utf8');
 
-  return serveGuestBookPage(req);
+  return redirectTo('guest-book.html');
 };
 
 const findHandler = function (req) {
   if (req.method === 'GET' && req.url === '/') return serveHomePage;
-  if (req.method === 'POST' && req.url === '/addComment') return addCommentAndServePage;
+  if (req.method === 'POST' && req.url === '/addComment') return addCommentAndRedirect;
   if (req.method === 'GET' && req.url === '/guest-book.html') return serveGuestBookPage;
   if (req.method === 'GET') return serveStaticFile;
   return new Response();
