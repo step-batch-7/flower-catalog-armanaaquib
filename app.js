@@ -7,15 +7,21 @@ const CONTENT_TYPES = require('./lib/mimeTypes');
 const STATIC_FOLDER = `${__dirname}/public`;
 const STORAGE_FILE = `${__dirname}/data/commentsDetail.json`;
 
+const doesNotFileExist = function (path) {
+  const stat = fs.existsSync(path) && fs.statSync(path);
+  return !stat || !stat.isFile();
+};
+
 const serveStaticFile = function (req) {
   const path = `${STATIC_FOLDER}${req.url}`;
-  const stat = fs.existsSync(path) && fs.statSync(path);
 
-  if (!stat || !stat.isFile()) return new Response();
+  if (doesNotFileExist(path)) return new Response();
+
   const [, extension] = path.match(/.*\.(.*)$/) || [];
   const contentType = CONTENT_TYPES[extension];
 
   const content = fs.readFileSync(path);
+
   const res = new Response();
   res.setHeader('Content-Type', contentType);
   res.setHeader('Content-Length', content.length);
