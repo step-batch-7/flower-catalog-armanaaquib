@@ -1,38 +1,27 @@
-const {Server} = require('net');
-const fs = require('fs');
+const http = require('http');
 
-const Request = require('./lib/request');
 const {processRequest} = require('./app');
+const PORT = process.argv[2] || 4000;
 
-const handleConnection = function (socket) {
-  const remote = {addr: socket.remoteAddress, port: socket.remotePort};
+const requestListener = function (req, res) {
+  const remote = {addr: req.socket.remoteAddress, port: req.socket.remotePort};
   console.warn('New Connection: ', remote);
 
-  socket.setEncoding('utf8');
-
-  socket.on('close', (hadError) => {
+  req.on('close', (hadError) => {
     console.warn(remote, 'closed', `${hadError ? 'with error.' : ''}`)
   });
 
-  socket.on('end', () => console.warn(remote, 'ended'));
+  req.on('end', () => console.warn(remote, 'ended'));
 
-  socket.on('error', (error) => console.error(`Socket Error ${error}`));
+  req.on('error', (error) => console.error(`Socket Error ${error}`));
 
-  socket.on('data', (text) => {
-    const req = Request.createFrom(text);
-    const res = processRequest(req);
-    res.writeTo(socket);
-  });
+  processRequest(req, res);
 };
 
 const main = function () {
-  const server = new Server();
-
-  server.on('error', err => console.error('server error', err));
-  server.on('connection', handleConnection);
-  server.on('listening', () => console.warn('Stared Listening', server.address()));
-
-  server.listen(4000);
+  const server = http.Server(requestListener)
+  server.on('error', (error) => console.error(error));
+  server.listen(PORT, () => console.log(`Listening at ${PORT}`));
 };
 
 main();

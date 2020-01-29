@@ -1,39 +1,40 @@
 const fs = require('fs');
 
-const Response = require('./lib/response');
 const {loadTemplate} = require('./lib/viewTemplate');
 const CONTENT_TYPES = require('./lib/mimeTypes');
 
 const STATIC_FOLDER = `${__dirname}/public`;
 const STORAGE_FILE = `${__dirname}/data/commentsDetail.json`;
 
+const notFound = function (req, res) {
+  res.writeHeader(404, {'Content-Length': 0});
+  res.end();
+};
+
 const doesNotFileExist = function (path) {
   const stat = fs.existsSync(path) && fs.statSync(path);
   return !stat || !stat.isFile();
 };
 
-const serveStaticFile = function (req) {
+const serveStaticFile = function (req, res) {
   const path = `${STATIC_FOLDER}${req.url}`;
 
-  if (doesNotFileExist(path)) return new Response();
+  if (doesNotFileExist(path)) return notFound(req, res);
 
   const [, extension] = path.match(/.*\.(.*)$/) || [];
   const contentType = CONTENT_TYPES[extension];
 
   const content = fs.readFileSync(path);
 
-  const res = new Response();
   res.setHeader('Content-Type', contentType);
   res.setHeader('Content-Length', content.length);
-  res.statusCode = 200;
-  res.body = content;
-
-  return res;
+  res.write(content);
+  res.end();
 };
 
-const serveHomePage = function (req) {
+const serveHomePage = function (req, res) {
   req.url = '/index.html';
-  return serveStaticFile(req);
+  return serveStaticFile(req, res);
 };
 
 const getCommentsDetail = function () {
@@ -79,27 +80,23 @@ const updateToHtmlFormat = function (commentDetail) {
   return commentDetail;
 };
 
-const serveGuestBookPage = function (req) {
+const serveGuestBookPage = function (req, res) {
   let commentsDetail = getCommentsDetail();
   commentsDetail = commentsDetail.map(updateToHtmlFormat);
 
   const comments = commentsDetail.reduce(addCommentHtml, '');
   const guestBookPage = loadTemplate('guest-book.html', {comments});
 
-  const res = new Response()
   res.setHeader('Content-Type', CONTENT_TYPES.html);
   res.setHeader('Content-Length', guestBookPage.length);
-  res.statusCode = 200;
-  res.body = guestBookPage;
-
-  return res;
+  res.write(guestBookPage);
+  res.end();
 };
 
-const redirectTo = function (newUrl) {
-  const res = new Response();
+const redirectTo = function (newUrl, res) {
   res.setHeader('location', newUrl);
-  res.statusCode = 301;
-  return res;
+  res.writeHeader(301);
+  res.end();
 };
 
 const formatStringWhiteSpaces = function (text) {
@@ -108,26 +105,46 @@ const formatStringWhiteSpaces = function (text) {
     '%0D%0A': '\r\n',
     '%3F': '?',
     '%2C': ',',
-    '%21': '!'
+    '%21': '!',
+    '%2F': '/'
   };
 
   return replace(text, whiteSpacesBag);
 };
 
-const addCommentAndRedirect = function (req) {
+const addQuery = (query, queryTextLine) => {
+  const [key, value] = queryTextLine.split('=');
+  query[key] = value;
+  return query;
+};
+
+const parseQuery = function (queryText) {
+  const queryTextLines = queryText.split('&');
+  return queryTextLines.reduce(addQuery, {});
+};
+
+const addComment = function (data) {
+  let commentDetails = getCommentsDetail();
   const date = new Date();
-  const commentDetail = {...req.body, date};
+  const query = parseQuery(data);
+  const commentDetail = {...query, date};
 
   commentDetail.name = formatStringWhiteSpaces(commentDetail.name);
   commentDetail.comment = formatStringWhiteSpaces(commentDetail.comment);
 
-  let commentDetails = getCommentsDetail();
   commentDetails.unshift(commentDetail);
-
   commentDetails = JSON.stringify(commentDetails);
   fs.writeFileSync(STORAGE_FILE, commentDetails, 'utf8');
+}
 
-  return redirectTo('guest-book.html');
+const addCommentAndRedirect = function (req, res) {
+  let data = ''
+  req.on('data', (chunk) => data += chunk);
+
+  req.on('end', () => {
+    addComment(data);
+    redirectTo('guest-book.html', res);
+  })
 };
 
 const findHandler = function (req) {
@@ -135,12 +152,12 @@ const findHandler = function (req) {
   if (req.method === 'POST' && req.url === '/addComment') return addCommentAndRedirect;
   if (req.method === 'GET' && req.url === '/guest-book.html') return serveGuestBookPage;
   if (req.method === 'GET') return serveStaticFile;
-  return new Response();
+  return notFound;
 };
 
-const processRequest = (req) => {
+const processRequest = (req, res) => {
   const handler = findHandler(req);
-  return handler(req);
+  handler(req, res);
 };
 
 module.exports = {processRequest};
