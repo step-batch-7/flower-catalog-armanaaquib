@@ -7,7 +7,8 @@ const STATIC_FOLDER = `${__dirname}/public`;
 const STORAGE_FILE = `${__dirname}/data/commentsDetail.json`;
 
 const notFound = function (req, res) {
-  res.writeHeader(404, {'Content-Length': 0});
+  const statusCode = 404;
+  res.writeHeader(statusCode, {'Content-Length': 0});
   res.end();
 };
 
@@ -19,7 +20,9 @@ const doesNotFileExist = function (path) {
 const serveStaticFile = function (req, res) {
   const path = `${STATIC_FOLDER}${req.url}`;
 
-  if (doesNotFileExist(path)) return notFound(req, res);
+  if (doesNotFileExist(path)) {
+    return notFound(req, res);
+  }
 
   const [, extension] = path.match(/.*\.(.*)$/) || [];
   const contentType = CONTENT_TYPES[extension];
@@ -95,7 +98,8 @@ const serveGuestBookPage = function (req, res) {
 
 const redirectTo = function (newUrl, res) {
   res.setHeader('location', newUrl);
-  res.writeHeader(301);
+  const statusCode = 303;
+  res.writeHeader(statusCode);
   res.end();
 };
 
@@ -135,16 +139,18 @@ const addComment = function (data) {
   commentDetails.unshift(commentDetail);
   commentDetails = JSON.stringify(commentDetails);
   fs.writeFileSync(STORAGE_FILE, commentDetails, 'utf8');
-}
+};
 
 const addCommentAndRedirect = function (req, res) {
-  let data = ''
-  req.on('data', (chunk) => data += chunk);
+  let data = '';
+  req.on('data', (chunk) => {
+    data += chunk;
+  });
 
   req.on('end', () => {
     addComment(data);
     redirectTo('guest-book.html', res);
-  })
+  });
 };
 
 const findHandler = function (req) {
