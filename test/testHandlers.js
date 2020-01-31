@@ -55,12 +55,23 @@ describe('GET nonExisting Url', () => {
 });
 
 describe('Get hideWateringCan script', function () {
-  it('should return hideWateringCan', function (done) {
+  it('should return hideWateringCan.js', function (done) {
     request(app.serve.bind(app))
       .get('/scripts/hideWateringCan.js')
       .set('Accept', '*/*')
       .expect(200)
       .expect('Content-Type', 'application/javascript', done)
       .expect(/hideWateringCan = function ()/);
+  });
+});
+
+describe('Get a css file', function () {
+  it('should return index.css', function (done) {
+    request(app.serve.bind(app))
+      .get('/styles/index.css')
+      .set('Accept', '*/*')
+      .expect(200)
+      .expect('Content-Type', 'text/css', done)
+      .expect(/#watering-can/);
   });
 });
