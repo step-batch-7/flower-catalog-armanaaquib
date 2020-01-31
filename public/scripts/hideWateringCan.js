@@ -7,5 +7,3 @@ const hideWateringCan = function () {
     wateringCan.style.visibility = 'visible';
   }, oneSecond);
 };
-
-module.exports = hideWateringCan;
