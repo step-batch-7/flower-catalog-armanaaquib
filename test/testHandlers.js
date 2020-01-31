@@ -53,3 +53,14 @@ describe('GET nonExisting Url', () => {
       .expect(404, done);
   });
 });
+
+describe('Get hideWateringCan script', function () {
+  it('should return hideWateringCan', function (done) {
+    request(app.serve.bind(app))
+      .get('/scripts/hideWateringCan.js')
+      .set('Accept', '*/*')
+      .expect(200)
+      .expect('Content-Type', 'application/javascript', done)
+      .expect(/hideWateringCan = function ()/);
+  });
+});
