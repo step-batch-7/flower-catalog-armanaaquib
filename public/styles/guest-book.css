@@ -1,9 +1,29 @@
+body{
+  font-family: sans-serif;
+}
+
 #heading {
   text-align: center;
 }
 
-.comments {
-  margin-top: 20px;
-  border-top: 1px solid black;
-  padding: 10px;
+table{
+  width: 100%;
+}
+
+.name, 
+.time{
+  width: 200px;
+  padding-left: 10px;
+}
+
+.comment{
+  font-weight: 300;
+  width: 500px;
+  padding-left: 20px;
+}
+
+td{
+  border: 0.1px solid black;
+  padding-top: 0px;
+  padding-bottom: 0px;
 }
