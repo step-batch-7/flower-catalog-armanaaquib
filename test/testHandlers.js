@@ -24,3 +24,32 @@ describe('Get Abeliophyllum page', function () {
   });
 });
 
+describe('Get Ageratun page', function () {
+  it('should return ageratun page', function (done) {
+    request(app.serve.bind(app))
+      .get('/ageratum.html')
+      .set('Accept', '*/*')
+      .expect(200)
+      .expect('Content-Type', 'text/html', done)
+      .expect(/<title>Ageratum<\/title>/);
+  });
+});
+
+describe('Get guest-book page', function () {
+  it('should return guest-book page', function (done) {
+    request(app.serve.bind(app))
+      .get('/guest-book.html')
+      .set('Accept', '*/*')
+      .expect(200)
+      .expect('Content-Type', 'text/html', done)
+      .expect(/<title>Guest Book<\/title>/);
+  });
+});
+
+describe('GET nonExisting Url', () => {
+  it('should return 404 for a non existing page', (done) => {
+    request(app.serve.bind(app))
+      .get('/badPage')
+      .expect(404, done);
+  });
+});
