@@ -6,6 +6,7 @@ const PORT = 4000;
 
 const main = function () {
   const server = new http.Server(app.serve.bind(app));
+
   server.on('error', (error) => stderr.write(error));
   server.listen(PORT, () => stdout.write(`Listening at ${PORT}`));
 };

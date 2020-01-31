@@ -1,5 +1,4 @@
 const request = require('supertest');
-// const fs = require('fs');
 const {app} = require('../lib/handlers');
 
 describe('Get Home Page', function () {
