@@ -1,8 +1,8 @@
 const http = require('http');
-const {stdout, stderr} = process;
+const { stdout, stderr, env } = process;
 
-const {app} = require('./lib/handlers');
-const PORT = 4000;
+const { app } = require('./lib/handlers');
+const PORT = env.PORT || 4000;
 
 const main = function () {
   const server = new http.Server(app.serve.bind(app));

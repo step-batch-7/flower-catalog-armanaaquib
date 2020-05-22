@@ -1,17 +1,1 @@
-[
-  {
-    "name": "arman",
-    "time": "2020-02-01T04:43:17.782Z",
-    "comment": "really nice!"
-  },
-  {
-    "name": "Aaquib Equbal",
-    "time": "2020-02-01T04:48:26.032Z",
-    "comment": "nice one!"
-  },
-  {
-    "name": "Rohit Sharma",
-    "time": "2020-02-01T04:48:51.655Z",
-    "comment": "Well Player.\r\nWhat a super over we had."
-  }
-]
+[{"name":"arman","time":"2020-02-01T04:43:17.782Z","comment":"really nice!"},{"name":"Aaquib Equbal","time":"2020-02-01T04:48:26.032Z","comment":"nice one!"},{"name":"Rohit Sharma","time":"2020-02-01T04:48:51.655Z","comment":"Well Player.\r\nWhat a super over we had."},{"name":"Mohammad Shami","time":"2020-02-01T05:07:08.462Z","comment":"Well bowled in last over."}]
